@@ -16,5 +16,5 @@
 ## 意見要望
 http://twitter.com/takanakahiko まで
 
-#　プロジェクトのサイト(?)
+## プロジェクトのサイト(?)
 http://takanakahiko.me/MovieOnWallpaper/
