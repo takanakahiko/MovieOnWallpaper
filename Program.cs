@@ -48,7 +48,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
     private System.Windows.Forms.NotifyIcon notifyIcon;
     private System.Windows.Forms.ContextMenu contextMenu;
-    private System.Windows.Forms.MenuItem menuItem;
+    private System.Windows.Forms.MenuItem menuItem0;
+    private System.Windows.Forms.MenuItem menuItem1;
 
     const uint SPI_GETDESKWALLPAPER = 115;
     const uint SPI_SETDESKWALLPAPER = 20;
@@ -104,7 +105,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
         this.elementHost = new System.Windows.Forms.Integration.ElementHost();
         this.mediaElement = new System.Windows.Controls.MediaElement();
         this.contextMenu = new System.Windows.Forms.ContextMenu();
-        this.menuItem = new System.Windows.Forms.MenuItem();
+        this.menuItem0 = new System.Windows.Forms.MenuItem();
+        this.menuItem1 = new System.Windows.Forms.MenuItem();
         this.notifyIcon = new System.Windows.Forms.NotifyIcon();
 
         Console.WriteLine("init elementHost");
@@ -137,12 +139,18 @@ class WallPaperEngine : System.Windows.Forms.Form {
         Console.WriteLine("add notifyIcon");
 
         // メニューにmenuItemを追加
-        this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem});
+        this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1});
 
         // menuItemとして終了ボタンを追加
-        this.menuItem.Index = 0;
-        this.menuItem.Text = "E&xit";
-        this.menuItem.Click += new System.EventHandler(this.menuItem_Click);
+        this.menuItem0.Index = 0;
+        this.menuItem0.Text = "E&xit";
+        this.menuItem0.Click += new System.EventHandler(this.menuItem0_Click);
+
+        // menuItemとして終了ボタンを追加
+        this.menuItem1.Index = 1;
+        this.menuItem1.Text = "Mute Audio";
+        this.menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
+        this.menuItem1.Checked = this.mediaElement.IsMuted;
 
         // タスクトレイのアイコンの設定
         this.notifyIcon.Icon = new Icon("favicon.ico");
@@ -168,8 +176,13 @@ class WallPaperEngine : System.Windows.Forms.Form {
         return workerw;
     }
 
-    private void menuItem_Click(object Sender, EventArgs e) {
+    private void menuItem0_Click(object Sender, EventArgs e) {
         this.Close();
+    }
+
+    private void menuItem1_Click(object Sender, EventArgs e) {
+        this.mediaElement.IsMuted = !this.mediaElement.IsMuted;
+        this.menuItem1.Checked = this.mediaElement.IsMuted;
     }
 
 }
