@@ -64,45 +64,39 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
     public WallPaperEngine(){
 
-        writeLog("get wallpaper");
-
         // 壁紙の取得
+        writeLog("get wallpaper");
         StringBuilder wp = new StringBuilder("");
         SystemParametersInfo(SPI_GETDESKWALLPAPER, 260, wp, 0);
 
+        //壁紙の設定
         writeLog("set wallpaper");
-
         this.FormClosed += (s, e) =>{
             SystemParametersInfo(SPI_SETDESKWALLPAPER, (uint)wp.Length, wp, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
         };
 
-        writeLog("set WorkerW");
-
         // ProgmanにWorkerWを作る
+        writeLog("set WorkerW");
         setWorkerW();
 
-        writeLog("get WorkerW");
-
         // SHELLDLL_DefViewを配下に持つWorkerWを調べる
+        writeLog("get WorkerW");
         IntPtr workerw = getWorkerW();
 
-        writeLog("set Parent");
-
         //　WorkerWにフォームをぶら下げる
+        writeLog("set Parent");
         SetParent(this.Handle, workerw);
 
-        writeLog("init Form");
-
         // フォームの設定
+        writeLog("init Form");
         this.Text = "WallPaperEngine";
         this.FormBorderStyle = FormBorderStyle.None;
         this.Left = this.Top = 0;
         this.Width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
         this.Height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
 
-        writeLog("init form parts");
-
         // フォーム内のパーツ
+        writeLog("init form parts");
         this.elementHost = new System.Windows.Forms.Integration.ElementHost();
         this.mediaElement = new System.Windows.Controls.MediaElement();
         this.contextMenu = new System.Windows.Forms.ContextMenu();
@@ -111,16 +105,14 @@ class WallPaperEngine : System.Windows.Forms.Form {
         this.menuItem2 = new System.Windows.Forms.MenuItem();
         this.notifyIcon = new System.Windows.Forms.NotifyIcon();
 
-        writeLog("init elementHost");
-
         // mediaElementを置くためのパーツ
+        writeLog("init elementHost");
         this.elementHost.Visible = true;
         this.elementHost.Dock = DockStyle.Fill;
         this.Controls.Add(this.elementHost);
 
-        writeLog("init mediaElement");
-
         // 動画再生パーツ
+        writeLog("init mediaElement");
         this.mediaElement.Visibility = System.Windows.Visibility.Visible;
         this.mediaElement.Margin = new System.Windows.Thickness(0, 0, 0, 0);
         this.mediaElement.UnloadedBehavior = System.Windows.Controls.MediaState.Manual;
@@ -130,13 +122,12 @@ class WallPaperEngine : System.Windows.Forms.Form {
         };
         this.elementHost.Child = this.mediaElement;
 
-        writeLog("load movie");
-
+        // 動画ソースの読み込み
+        writeLog("load video");
         loadVideo();
 
-        writeLog("add notifyIcon");
-
         // メニューにmenuItemを追加
+        writeLog("add notifyIcon");
         this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2});
 
         // menuItem0として終了ボタンを追加
@@ -160,7 +151,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
         this.notifyIcon.ContextMenu = this.contextMenu;
         this.notifyIcon.Text = this.Text;
         this.notifyIcon.Visible = true;
-
+        
     }
 
     private void setWorkerW(){
