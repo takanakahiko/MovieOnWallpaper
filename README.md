@@ -32,5 +32,5 @@ stem.Xaml.dll /r:WPF\WindowsBase.dll`
 ## 意見要望
 http://twitter.com/takanakahiko まで
 
-## プロジェクトのサイト(?)
+## プロジェクトサイト(?)
 http://takanakahiko.me/MovieOnWallpaper/
