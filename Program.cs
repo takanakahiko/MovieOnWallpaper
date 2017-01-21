@@ -67,7 +67,9 @@ class WallPaperEngine : System.Windows.Forms.Form {
         // 壁紙の取得
         writeLog("get wallpaper");
         StringBuilder wp = new StringBuilder("");
-        SystemParametersInfo(SPI_GETDESKWALLPAPER, 260, wp, 0);
+        writeLog("seted pointer");
+        SystemParametersInfo(SPI_GETDESKWALLPAPER, 512, wp, 0);
+        writeLog("wp path : " + wp);
 
         //壁紙の設定
         writeLog("set wallpaper");
@@ -151,7 +153,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
         this.notifyIcon.ContextMenu = this.contextMenu;
         this.notifyIcon.Text = this.Text;
         this.notifyIcon.Visible = true;
-        
+
     }
 
     private void setWorkerW(){
