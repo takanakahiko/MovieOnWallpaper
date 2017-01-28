@@ -39,8 +39,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
     public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
     // 壁紙の取得と変更に用いる関数
-    [System.Runtime.InteropServices.DllImport("user32.dll")]
-    private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, StringBuilder pvParam, uint fWinIni);
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern int SystemParametersInfo(int uAction,int uParam, string lpvParam, int fuWinIni);
 
     //
     private System.Windows.Forms.Integration.ElementHost elementHost;
@@ -52,10 +52,10 @@ class WallPaperEngine : System.Windows.Forms.Form {
     private System.Windows.Forms.MenuItem menuItem1;
     private System.Windows.Forms.MenuItem menuItem2;
 
-    const uint SPI_GETDESKWALLPAPER = 115;
-    const uint SPI_SETDESKWALLPAPER = 20;
-    const uint SPIF_UPDATEINIFILE = 1;
-    const uint SPIF_SENDWININICHANGE = 2;
+    const int SPI_GETDESKWALLPAPER = 115;
+    const int SPI_SETDESKWALLPAPER = 20;
+    const int SPIF_UPDATEINIFILE = 1;
+    const int SPIF_SENDWININICHANGE = 2;
 
     [STAThread]
     static void Main(){
@@ -65,16 +65,22 @@ class WallPaperEngine : System.Windows.Forms.Form {
     public WallPaperEngine(){
 
         // 壁紙の取得
+        /*
         writeLog("get wallpaper");
         StringBuilder wp = new StringBuilder("");
         writeLog("seted pointer");
         SystemParametersInfo(SPI_GETDESKWALLPAPER, 512, wp, 0);
         writeLog("wp path : " + wp);
+        */
+
+        string wallpaper = new string('\0', 216);
+        SystemParametersInfo(SPI_GETDESKWALLPAPER, (int)wallpaper.Length, wallpaper, 0);
+        string wp = wallpaper.Substring(0, wallpaper.IndexOf('\0'));
 
         //壁紙の設定
         writeLog("set wallpaper");
         this.FormClosed += (s, e) =>{
-            SystemParametersInfo(SPI_SETDESKWALLPAPER, (uint)wp.Length, wp, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
+            SystemParametersInfo(SPI_SETDESKWALLPAPER, wp.Length, wp, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
         };
 
         // ProgmanにWorkerWを作る
@@ -196,6 +202,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     private void writeLog(string message){
       string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
       System.IO.File.AppendAllText("log.txt", appendText);
+      //Console.WriteLine(appendText);
     }
 
 }
