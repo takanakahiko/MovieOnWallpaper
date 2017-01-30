@@ -38,6 +38,12 @@ class WallPaperEngine : System.Windows.Forms.Form {
     [DllImport("user32.dll", SetLastError = true)]
     public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
+    [DllImport("user32.dll")]
+    static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern int GetClassName(IntPtr hWnd,StringBuilder lpClassName, int nMaxCount);
+
     // 壁紙の取得と変更に用いる関数
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     private static extern int SystemParametersInfo(int uAction,int uParam, string lpvParam, int fuWinIni);
@@ -93,8 +99,11 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
         //　WorkerWにフォームをぶら下げる
         writeLog("set Parent");
-        SetParent(this.Handle, workerw);
+        IntPtr progman = FindWindow("Progman", null);
+        SetParent(this.Handle, progman);
+        //SetParent(this.Handle, workerw);
 
+        
         // フォームの設定
         writeLog("init Form");
         this.Text = "WallPaperEngine";
@@ -171,9 +180,20 @@ class WallPaperEngine : System.Windows.Forms.Form {
     private IntPtr getWorkerW(){
         IntPtr workerw = IntPtr.Zero;
         EnumWindows(new EnumWindowsProc((tophandle, topparamhandle) => {
+
+          IntPtr p = FindWindowEx(tophandle,IntPtr.Zero,"SHELLDLL_DefView",IntPtr.Zero);
+          if (p != IntPtr.Zero) workerw = FindWindowEx(IntPtr.Zero,tophandle,"WorkerW",IntPtr.Zero);
+
+          //ウィンドウのクラス名を取得する
+          /*
+          StringBuilder csb = new StringBuilder(256);
+          GetClassName(tophandle, csb, csb.Capacity);
+          if( csb.ToString() == "WorkerW" || csb.ToString() == "Progman" ){
             IntPtr p = FindWindowEx(tophandle,IntPtr.Zero,"SHELLDLL_DefView",IntPtr.Zero);
-            if (p != IntPtr.Zero) workerw = FindWindowEx(IntPtr.Zero,tophandle,"WorkerW",IntPtr.Zero);
-            return true;
+            if (p != IntPtr.Zero) workerw = tophandle;
+          }
+          */
+          return true;
         }), IntPtr.Zero);
         return workerw;
     }
