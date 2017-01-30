@@ -44,6 +44,10 @@ class WallPaperEngine : System.Windows.Forms.Form {
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     public static extern int GetClassName(IntPtr hWnd,StringBuilder lpClassName, int nMaxCount);
 
+    [DllImport("user32.dll")]
+    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+
     // 壁紙の取得と変更に用いる関数
     [DllImport("user32.dll", CharSet = CharSet.Auto)]
     private static extern int SystemParametersInfo(int uAction,int uParam, string lpvParam, int fuWinIni);
@@ -102,8 +106,15 @@ class WallPaperEngine : System.Windows.Forms.Form {
         IntPtr progman = FindWindow("Progman", null);
         SetParent(this.Handle, progman);
         //SetParent(this.Handle, workerw);
+        uint NOSIZE = 0x0001;
+        uint NOMOVE = 0x0002;
+        uint SHOWWINDOW = 0x0040;
+        uint ASYNCWINDOWPOS = 0x4000;
+        uint flags =  SHOWWINDOW | NOSIZE | NOMOVE | ASYNCWINDOWPOS;
+        SetWindowPos(this.Handle, IntPtr.Zero, 0, 0, 0, 0, flags);
+        //ShowWindowAsync(this.Handle, 1);
 
-        
+
         // フォームの設定
         writeLog("init Form");
         this.Text = "WallPaperEngine";
