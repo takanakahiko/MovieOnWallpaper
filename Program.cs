@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
+
 class WallPaperEngine : System.Windows.Forms.Form {
 
     public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
