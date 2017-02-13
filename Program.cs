@@ -20,7 +20,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
   private System.Windows.Forms.MenuItem menuItem0;
   private System.Windows.Forms.MenuItem menuItem1;
   private System.Windows.Forms.MenuItem menuItem2;
-  
+  private System.Windows.Forms.MenuItem menuItem3;
+
   [STAThread]
   static void Main(){
     Application.Run(new WallPaperEngine());
@@ -51,6 +52,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem0 = new System.Windows.Forms.MenuItem();
     this.menuItem1 = new System.Windows.Forms.MenuItem();
     this.menuItem2 = new System.Windows.Forms.MenuItem();
+    this.menuItem3 = new System.Windows.Forms.MenuItem();
     this.notifyIcon = new System.Windows.Forms.NotifyIcon();
 
     // mediaElementを置くためのパーツ
@@ -94,6 +96,11 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem2.Text = "Load Video";
     this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
 
+    // menuItem3として「作者に奢る」ボタンを追加
+    this.menuItem3.Index = 3;
+    this.menuItem3.Text = "作者に奢る";
+    this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
+
     // タスクトレイのアイコンの設定
     this.notifyIcon.Icon = new Icon("favicon.ico");
     this.notifyIcon.ContextMenu = this.contextMenu;
@@ -107,6 +114,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
     OpenFileDialog ofd = new OpenFileDialog();
     if (ofd.ShowDialog() == DialogResult.OK){
       this.mediaElement.Source = new Uri(ofd.FileName);
+    }else{
+      MessageBox.Show("動画が読み込めませんでした。\n読み込みなおすにはタスクトレイアイコンを右クリックして「Load Video」を選択してください。","エラー",MessageBoxButtons.OK,MessageBoxIcon.Error);
     }
   }
 
@@ -121,6 +130,10 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
   private void menuItem2_Click(object Sender, EventArgs e) {
     this.loadVideo();
+  }
+
+  private void menuItem3_Click(object Sender, EventArgs e) {
+    System.Diagnostics.Process.Start("http://www.amazon.co.jp/registry/wishlist/2X1XQIFXKS456/ref=cm_sw_r_tw_ws_x_gBDOybXPBC2NP");
   }
 
   private void writeLog(string message){
