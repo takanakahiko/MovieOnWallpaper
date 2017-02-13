@@ -22,37 +22,6 @@ class WallPaperEngine : System.Windows.Forms.Form {
         SMTO_NOTIMEOUTIFNOTHUNG = 0x8,
         SMTO_ERRORONEXIT = 0x20
     }
-
-    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-    public static extern IntPtr SendMessageTimeout(IntPtr windowHandle, uint Msg, IntPtr wParam, IntPtr lParam, SendMessageTimeoutFlags flags, uint timeout, out IntPtr result);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string className, IntPtr windowTitle);
-
-    [DllImport("user32.dll", SetLastError = true)]
-    public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
-
-    [DllImport("user32.dll")]
-    static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-    public static extern int GetClassName(IntPtr hWnd,StringBuilder lpClassName, int nMaxCount);
-
-    [DllImport("user32.dll")]
-    public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-
-    // 壁紙の取得と変更に用いる関数
-    [DllImport("user32.dll", CharSet = CharSet.Auto)]
-    private static extern int SystemParametersInfo(int uAction,int uParam, string lpvParam, int fuWinIni);
-
     //
     private System.Windows.Forms.Integration.ElementHost elementHost;
     private System.Windows.Controls.MediaElement mediaElement;
@@ -75,45 +44,16 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
     public WallPaperEngine(){
 
-        // 壁紙の取得
-        /*
-        writeLog("get wallpaper");
-        StringBuilder wp = new StringBuilder("");
-        writeLog("seted pointer");
-        SystemParametersInfo(SPI_GETDESKWALLPAPER, 512, wp, 0);
-        writeLog("wp path : " + wp);
-        */
+        IntPtr progman = IntPtr.Zero;
+        progman = Wallpainter.SetupWallpaper();
 
-        string wallpaper = new string('\0', 216);
-        SystemParametersInfo(SPI_GETDESKWALLPAPER, (int)wallpaper.Length, wallpaper, 0);
-        string wp = wallpaper.Substring(0, wallpaper.IndexOf('\0'));
+        if (progman == IntPtr.Zero)
+            writeLog("Error : Failed to retrieve progman!");
 
-        //壁紙の設定
-        writeLog("set wallpaper");
-        this.FormClosed += (s, e) =>{
-            SystemParametersInfo(SPI_SETDESKWALLPAPER, wp.Length, wp, SPIF_UPDATEINIFILE | SPIF_SENDWININICHANGE);
-        };
+        if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero)
+            writeLog("Error : Failed to set Parent!");
 
-        // ProgmanにWorkerWを作る
-        writeLog("set WorkerW");
-        setWorkerW();
-
-        // SHELLDLL_DefViewを配下に持つWorkerWを調べる
-        writeLog("get WorkerW");
-        IntPtr workerw = getWorkerW();
-
-        //　WorkerWにフォームをぶら下げる
-        writeLog("set Parent");
-        IntPtr progman = FindWindow("Progman", null);
-        SetParent(this.Handle, progman);
-        //SetParent(this.Handle, workerw);
-        uint NOSIZE = 0x0001;
-        uint NOMOVE = 0x0002;
-        uint SHOWWINDOW = 0x0040;
-        uint ASYNCWINDOWPOS = 0x4000;
-        uint flags =  SHOWWINDOW | NOSIZE | NOMOVE | ASYNCWINDOWPOS;
-        SetWindowPos(this.Handle, IntPtr.Zero, 0, 0, 0, 0, flags);
-        //ShowWindowAsync(this.Handle, 1);
+        WinAPI.ShowWindowAsync(this.Handle, 1);
 
 
         // フォームの設定
@@ -181,33 +121,6 @@ class WallPaperEngine : System.Windows.Forms.Form {
         this.notifyIcon.Text = this.Text;
         this.notifyIcon.Visible = true;
 
-    }
-
-    private void setWorkerW(){
-        IntPtr progman = FindWindow("Progman", null);
-        IntPtr result = IntPtr.Zero;
-        SendMessageTimeout(progman,0x052C,new IntPtr(0),IntPtr.Zero,SendMessageTimeoutFlags.SMTO_NORMAL,1000,out result);
-    }
-
-    private IntPtr getWorkerW(){
-        IntPtr workerw = IntPtr.Zero;
-        EnumWindows(new EnumWindowsProc((tophandle, topparamhandle) => {
-
-          IntPtr p = FindWindowEx(tophandle,IntPtr.Zero,"SHELLDLL_DefView",IntPtr.Zero);
-          if (p != IntPtr.Zero) workerw = FindWindowEx(IntPtr.Zero,tophandle,"WorkerW",IntPtr.Zero);
-
-          //ウィンドウのクラス名を取得する
-          /*
-          StringBuilder csb = new StringBuilder(256);
-          GetClassName(tophandle, csb, csb.Capacity);
-          if( csb.ToString() == "WorkerW" || csb.ToString() == "Progman" ){
-            IntPtr p = FindWindowEx(tophandle,IntPtr.Zero,"SHELLDLL_DefView",IntPtr.Zero);
-            if (p != IntPtr.Zero) workerw = tophandle;
-          }
-          */
-          return true;
-        }), IntPtr.Zero);
-        return workerw;
     }
 
     private void loadVideo(){
