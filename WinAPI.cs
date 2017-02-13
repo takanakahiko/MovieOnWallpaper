@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 class WinAPI
 {
   public static UInt32 WM_SPAWN_WORKER = 0x052C;
-  public static UInt32 WM_CLOSE = 0x0010;
 
   public enum WindowLongFlags : int{
     GWL_EXSTYLE = -20,
@@ -28,45 +27,6 @@ class WinAPI
     SMTO_NOTIMEOUTIFNOTHUNG = 0x8,
     SMTO_ERRORONEXIT = 0x20
   }
-
-  public static class SetWindowPosFlags{
-    public static readonly uint
-    NOSIZE = 0x0001,
-    NOMOVE = 0x0002,
-    NOZORDER = 0x0004,
-    NOREDRAW = 0x0008,
-    NOACTIVATE = 0x0010,
-    DRAWFRAME = 0x0020,
-    FRAMECHANGED = 0x0020,
-    SHOWWINDOW = 0x0040,
-    HIDEWINDOW = 0x0080,
-    NOCOPYBITS = 0x0100,
-    NOOWNERZORDER = 0x0200,
-    NOREPOSITION = 0x0200,
-    NOSENDCHANGING = 0x0400,
-    DEFERERASE = 0x2000,
-    ASYNCWINDOWPOS = 0x4000;
-  }
-
-  [StructLayout(LayoutKind.Sequential)]
-  public struct RECT{
-    public int Left;        // x position of upper-left corner
-    public int Top;         // y position of upper-left corner
-    public int Right;       // x position of lower-right corner
-    public int Bottom;      // y position of lower-right corner
-
-    public int Width { get { return Right - Left; } }
-    public int Height { get { return Bottom - Top; } }
-
-    public RECT(int x, int y, int w, int h)
-    {
-      Left = x;
-      Top = y;
-      Right = w + x;
-      Bottom = y + h;
-    }
-  }
-
 
   public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
@@ -92,21 +52,9 @@ class WinAPI
   [DllImport("user32.dll", CharSet = CharSet.Auto)]
   public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
 
-  [DllImport("user32.dll")]
-  public static extern int SetWindowLong(IntPtr hWnd, int nIndex, uint dwNewLong);
-
-  [DllImport("user32.dll", SetLastError = true)]
-  public static extern uint GetWindowLong(IntPtr hWnd, int nIndex);
-
   //Set window min/max/normal status
   [DllImport("user32.dll")]
   public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-
-  [DllImport("user32.dll", SetLastError = true)]
-  public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
-
-  [DllImport("user32.dll", SetLastError = true)]
-  public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
 }
 
