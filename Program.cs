@@ -11,17 +11,6 @@ using System.Runtime.InteropServices;
 
 class WallPaperEngine : System.Windows.Forms.Form {
 
-  public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
-
-  [Flags]
-  public enum SendMessageTimeoutFlags : uint
-  {
-    SMTO_NORMAL = 0x0,
-    SMTO_BLOCK = 0x1,
-    SMTO_ABORTIFHUNG = 0x2,
-    SMTO_NOTIMEOUTIFNOTHUNG = 0x8,
-    SMTO_ERRORONEXIT = 0x20
-  }
   //
   private System.Windows.Forms.Integration.ElementHost elementHost;
   private System.Windows.Controls.MediaElement mediaElement;
@@ -31,12 +20,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
   private System.Windows.Forms.MenuItem menuItem0;
   private System.Windows.Forms.MenuItem menuItem1;
   private System.Windows.Forms.MenuItem menuItem2;
-
-  const int SPI_GETDESKWALLPAPER = 115;
-  const int SPI_SETDESKWALLPAPER = 20;
-  const int SPIF_UPDATEINIFILE = 1;
-  const int SPIF_SENDWININICHANGE = 2;
-
+  
   [STAThread]
   static void Main(){
     Application.Run(new WallPaperEngine());
