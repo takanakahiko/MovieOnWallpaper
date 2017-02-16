@@ -21,6 +21,13 @@ class WallPaperEngine : System.Windows.Forms.Form {
   private System.Windows.Forms.MenuItem menuItem1;
   private System.Windows.Forms.MenuItem menuItem2;
   private System.Windows.Forms.MenuItem menuItem3;
+  private System.Windows.Forms.MenuItem menuItem4;
+  private System.Windows.Controls.WebBrowser webBrowser;
+
+  Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(FEATURE_BROWSER_EMULATION);
+  const string FEATURE_BROWSER_EMULATION = @"Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_BROWSER_EMULATION";
+  string process_name = System.Diagnostics.Process.GetCurrentProcess().ProcessName + ".exe";
+  string process_dbg_name = System.Diagnostics.Process.GetCurrentProcess().ProcessName + ".vshost.exe";
 
   [STAThread]
   static void Main(){
@@ -28,6 +35,12 @@ class WallPaperEngine : System.Windows.Forms.Form {
   }
 
   public WallPaperEngine(){
+    //下記処理（レジストリを）をリセットする
+    this.FormClosing += Form1_FormClosing;
+
+    //IEのレジストリキーを登録
+    regkey.SetValue(process_name, 11001, Microsoft.Win32.RegistryValueKind.DWord);
+    regkey.SetValue(process_dbg_name, 11001, Microsoft.Win32.RegistryValueKind.DWord);
 
     //壁紙にFormを張り付ける
     IntPtr progman = IntPtr.Zero;
@@ -53,7 +66,9 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem1 = new System.Windows.Forms.MenuItem();
     this.menuItem2 = new System.Windows.Forms.MenuItem();
     this.menuItem3 = new System.Windows.Forms.MenuItem();
+    this.menuItem4 = new System.Windows.Forms.MenuItem();
     this.notifyIcon = new System.Windows.Forms.NotifyIcon();
+    this.webBrowser = new System.Windows.Controls.WebBrowser();
 
     // mediaElementを置くためのパーツ
     writeLog("init elementHost");
@@ -72,13 +87,17 @@ class WallPaperEngine : System.Windows.Forms.Form {
     };
     this.elementHost.Child = this.mediaElement;
 
+    writeLog("init webBrowser");
+    this.webBrowser.Visibility = System.Windows.Visibility.Visible;
+    this.webBrowser.Margin = new System.Windows.Thickness(0, 0, 0, 0);
+
     // 動画ソースの読み込み
     writeLog("load video");
     loadVideo();
 
     // メニューにmenuItemを追加
     writeLog("add notifyIcon");
-    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2});
+    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4});
 
     // menuItem0として終了ボタンを追加
     this.menuItem0.Index = 0;
@@ -98,8 +117,13 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
     // menuItem3として「作者に奢る」ボタンを追加
     this.menuItem3.Index = 3;
-    this.menuItem3.Text = "作者に奢る";
+    this.menuItem3.Text = "Load URL";
     this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
+
+    // menuItem4として「作者に奢る」ボタンを追加
+    this.menuItem4.Index = 4;
+    this.menuItem4.Text = "作者に奢る";
+    this.menuItem4.Click += new System.EventHandler(this.menuItem4_Click);
 
     // タスクトレイのアイコンの設定
     this.notifyIcon.Icon = new Icon("favicon.ico");
@@ -111,13 +135,30 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
   private void loadVideo(){
     // 動画読み込みダイアログの追加
+    this.elementHost.Child = null;
     OpenFileDialog ofd = new OpenFileDialog();
     if (ofd.ShowDialog() == DialogResult.OK){
       this.mediaElement.Source = new Uri(ofd.FileName);
     }else{
       MessageBox.Show("動画が読み込めませんでした。\n読み込みなおすにはタスクトレイアイコンを右クリックして「Load Video」を選択してください。","エラー",MessageBoxButtons.OK,MessageBoxIcon.Error);
     }
+    this.elementHost.Child = this.mediaElement;
   }
+
+  private void loadURL(){
+    // URL読み込みダイアログの追加
+    this.elementHost.Child = null;
+    string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
+    this.webBrowser.Navigate(s1);
+    this.elementHost.Child = this.webBrowser;
+  }
+
+  private void Form1_FormClosing(object sender, FormClosingEventArgs e){
+      regkey.DeleteValue(process_name);
+      regkey.DeleteValue(process_dbg_name);
+      regkey.Close();
+  }
+
 
   private void menuItem0_Click(object Sender, EventArgs e) {
     this.Close();
@@ -133,6 +174,10 @@ class WallPaperEngine : System.Windows.Forms.Form {
   }
 
   private void menuItem3_Click(object Sender, EventArgs e) {
+    this.loadURL();
+  }
+
+  private void menuItem4_Click(object Sender, EventArgs e) {
     System.Diagnostics.Process.Start("http://www.amazon.co.jp/registry/wishlist/2X1XQIFXKS456/ref=cm_sw_r_tw_ws_x_gBDOybXPBC2NP");
   }
 
