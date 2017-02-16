@@ -147,6 +147,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
   private void loadURL(){
     // URL読み込みダイアログの追加
+    this.mediaElement.Pause();
     this.elementHost.Child = null;
     string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
     this.webBrowser.Navigate(s1);
