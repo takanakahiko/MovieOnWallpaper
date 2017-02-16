@@ -19,6 +19,7 @@
 - Exitを選択で終了
 - MuteAudioを選択で音声ミュート
 - LoadVideoを選択で動画を再選択
+- LoadURLを選択でWEBページを表示 -> [recommend](https://earth.nullschool.net/jp/#current/wind/surface/level/orthographic=139.26,31.86,706)
 
 ## 問題点改善点
 - アイコンを専用のやつを作りたい
