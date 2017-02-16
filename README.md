@@ -4,7 +4,7 @@
 壁紙を動画にするやつです
 
 ## コンパイル
-`C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /t:winexe program.cs WinAPI.cs /r:WPF\WindowsFormsIntegration.dll /r:WPF\PresentationFramework.dll /r:WPF\PresentationCore.dll /r:System.Xaml.dll /r:WPF\WindowsBase.dll`
+` C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /t:winexe program.cs WinAPI.cs /r:WPF\WindowsFormsIntegration.dll /r:WPF\PresentationFramework.dll /r:WPF\PresentationCore.dll /r:System.Xaml.dll /r:WPF\WindowsBase.dll /r:Microsoft.VisualBasic.dll`
 
 ## 操作方法
 
