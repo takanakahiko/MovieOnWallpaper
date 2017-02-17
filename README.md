@@ -24,6 +24,7 @@
 ## 問題点改善点
 - アイコンを専用のやつを作りたい
 - 音量を調節するパネルがほしい
+- webBrowserコンポーネントにmouseMoveイベントを送りたい(マウスの動きに反応するWebページへの対応)
 
 ## 意見要望
 http://twitter.com/takanakahiko まで
