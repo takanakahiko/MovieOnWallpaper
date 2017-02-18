@@ -150,8 +150,14 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.mediaElement.Pause();
     this.elementHost.Child = null;
     string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
-    this.webBrowser.Navigate(s1);
-    this.elementHost.Child = this.webBrowser;
+    try{
+        this.webBrowser.Navigate(s1);
+        this.elementHost.Child = this.webBrowser;
+    }catch (Exception e) {
+        writeLog("url error : "+e.GetType().ToString());
+        MessageBox.Show("無効なURLです。\n正しい形式のURLを指定してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        this.elementHost.Child = this.mediaElement;
+    }
   }
 
   private void Form1_FormClosing(object sender, FormClosingEventArgs e){
