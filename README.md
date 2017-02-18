@@ -4,7 +4,12 @@
 壁紙を動画にするやつです
 
 ## コンパイル
-` C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /t:winexe program.cs WinAPI.cs /r:WPF\WindowsFormsIntegration.dll /r:WPF\PresentationFramework.dll /r:WPF\PresentationCore.dll /r:System.Xaml.dll /r:WPF\WindowsBase.dll /r:Microsoft.VisualBasic.dll`
+
+### Debugビルド
+` C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe MovieOnWallpaper.csproj /p:Configuration=Debug `
+
+### Releaseビルド
+` C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe MovieOnWallpaper.csproj /p:Configuration=Release `  
 
 ## 操作方法
 
