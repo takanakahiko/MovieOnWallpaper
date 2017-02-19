@@ -141,6 +141,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
         submenuItem.Click += submenu_utility.menuItem5_subMenu_Click(sc);
         if (true == sc.Primary) {
             submenuItem.Checked = true;
+            submenu_utility.init_master_sc(sc);
         }
         submenu_utility.addSubMenuItem(submenuItem);
         this.menuItem5.MenuItems.Add(submenuItem);
@@ -219,6 +220,10 @@ public class MenuItem5_subMenu_utility
         this.ehost_ = ehost;
     }
 
+    public void init_master_sc(Screen sc){
+        this.master_sc_ = sc;
+    }
+
     public void addSubMenuItem(System.Windows.Forms.MenuItem submenuitem) {
         submenuitemlist_.Add(submenuitem);
     }
@@ -227,9 +232,6 @@ public class MenuItem5_subMenu_utility
     {
         //like radio button
         bool temp_checked = !targetitem.Checked;
-        /*foreach (System.Windows.Forms.MenuItem submenuitem in submenuitemlist_) {
-            submenuitem.Checked = false;
-        }*/
         targetitem.Checked = temp_checked;
     }
 
@@ -276,7 +278,7 @@ public class MenuItem5_subMenu_utility
             if (true == targetitem.Checked){
                 this.killMirror(sc);
                 this.setdsp_.setDsp(sc);
-                wakeUpMirror(master_sc_);
+                wakeUpMirror(this.master_sc_);
                 this.master_sc_ = sc;
             }else {
                 if (sc == master_sc_){

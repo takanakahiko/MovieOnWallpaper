@@ -12,11 +12,12 @@ using System.Windows.Media;
 
 public class Mirror : System.Windows.Forms.Form
 {
-    private System.Windows.Controls.MediaElement mediaElement;
     private System.Windows.Forms.Integration.ElementHost elementHost;
-    private System.Windows.Controls.Grid baseGrid;
     public Mirror(System.Windows.Forms.Screen sc, System.Windows.Forms.Integration.ElementHost ehost)
     {
+        //prevent freeze
+        System.Threading.Thread.Sleep(2000);
+
         //壁紙にFormを張り付ける
         IntPtr progman = IntPtr.Zero;
         progman = Wallpainter.SetupWallpaper();
