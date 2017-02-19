@@ -62,7 +62,6 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.elementHost = new System.Windows.Forms.Integration.ElementHost();
     this.mediaElement = new System.Windows.Controls.MediaElement();
     this.contextMenu = new System.Windows.Forms.ContextMenu();
-    this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
     this.menuItem0 = new System.Windows.Forms.MenuItem();
     this.menuItem1 = new System.Windows.Forms.MenuItem();
     this.menuItem2 = new System.Windows.Forms.MenuItem();
@@ -256,7 +255,6 @@ public class SetDisplay {
         this.form_.Left = this.form_.Top = 0;
         this.calibration_x_ = -this.form_.Left;
         this.calibration_y_ = -this.form_.Top;
-        int a = 10;
     }
 
     public void setPrimaryDsp()
