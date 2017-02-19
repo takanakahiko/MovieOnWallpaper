@@ -36,6 +36,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
   }
 
   public WallPaperEngine(){
+
     //下記処理（レジストリを）をリセットする
     this.FormClosing += Form1_FormClosing;
 
@@ -46,19 +47,19 @@ class WallPaperEngine : System.Windows.Forms.Form {
     //壁紙にFormを張り付ける
     IntPtr progman = IntPtr.Zero;
     progman = Wallpainter.SetupWallpaper();
-    if (progman == IntPtr.Zero) writeLog("Error : Failed to retrieve progman!");
-    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) writeLog("Error : Failed to set Parent!");
+    if (progman == IntPtr.Zero) Utillities.writeLog("Error : Failed to retrieve progman!");
+    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utillities.writeLog("Error : Failed to set Parent!");
     WinAPI.ShowWindowAsync(this.Handle, 1);
 
     // フォームの設定
-    writeLog("init Form");
+    Utillities.writeLog("init Form");
     this.Text = "WallPaperEngine";
     this.FormBorderStyle = FormBorderStyle.None;
     SetDisplay setdsp = new SetDisplay(this);
     setdsp.setPrimaryDsp();
 
     // フォーム内のパーツ
-    writeLog("init form parts");
+    Utillities.writeLog("init form parts");
     this.elementHost = new System.Windows.Forms.Integration.ElementHost();
     this.mediaElement = new System.Windows.Controls.MediaElement();
     this.contextMenu = new System.Windows.Forms.ContextMenu();
@@ -72,13 +73,13 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.webBrowser = new System.Windows.Controls.WebBrowser();
 
     // mediaElementを置くためのパーツ
-    writeLog("init elementHost");
+    Utillities.writeLog("init elementHost");
     this.elementHost.Visible = true;
     this.elementHost.Dock = DockStyle.Fill;
     this.Controls.Add(this.elementHost);
 
     // 動画再生パーツ
-    writeLog("init mediaElement");
+    Utillities.writeLog("init mediaElement");
     this.mediaElement.Visibility = System.Windows.Visibility.Visible;
     this.mediaElement.Margin = new System.Windows.Thickness(0, 0, 0, 0);
     this.mediaElement.UnloadedBehavior = System.Windows.Controls.MediaState.Manual;
@@ -88,16 +89,16 @@ class WallPaperEngine : System.Windows.Forms.Form {
     };
     this.elementHost.Child = this.mediaElement;
 
-    writeLog("init webBrowser");
+    Utillities.writeLog("init webBrowser");
     this.webBrowser.Visibility = System.Windows.Visibility.Visible;
     this.webBrowser.Margin = new System.Windows.Thickness(0, 0, 0, 0);
 
     // 動画ソースの読み込み
-    writeLog("load video");
+    Utillities.writeLog("load video");
     loadVideo();
 
     // メニューにmenuItemを追加
-    writeLog("add notifyIcon");
+    Utillities.writeLog("add notifyIcon");
     this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4,this.menuItem5});
 
 
@@ -130,7 +131,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     // menuItem5としてターゲットディスプレイボタンを追加
     this.menuItem5.Index = 4;
     this.menuItem5.Text = "Target Display";
-    MenuItem5_subMenu_utility submenu_utility = new MenuItem5_subMenu_utility(setdsp);
+    MenuItem5_subMenu_utility submenu_utility = new MenuItem5_subMenu_utility(setdsp,elementHost);
 
     //接続されているディスプレイの数だけmenuItem5にサブメニューを追加
     Screen[] sc_array = System.Windows.Forms.Screen.AllScreens;
@@ -138,6 +139,9 @@ class WallPaperEngine : System.Windows.Forms.Form {
         System.Windows.Forms.MenuItem submenuItem = new MenuItem();
         submenuItem.Text = sc.DeviceName;
         submenuItem.Click += submenu_utility.menuItem5_subMenu_Click(sc);
+        if (true == sc.Primary) {
+            submenuItem.Checked = true;
+        }
         submenu_utility.addSubMenuItem(submenuItem);
         this.menuItem5.MenuItems.Add(submenuItem);
     }
@@ -199,21 +203,20 @@ class WallPaperEngine : System.Windows.Forms.Form {
     System.Diagnostics.Process.Start("http://www.amazon.co.jp/registry/wishlist/2X1XQIFXKS456/ref=cm_sw_r_tw_ws_x_gBDOybXPBC2NP");
   }
 
-  private void writeLog(string message){
-    string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
-    System.IO.File.AppendAllText("log.txt", appendText);
-  }
-
 }
 
 public class MenuItem5_subMenu_utility
 {
     private List<System.Windows.Forms.MenuItem> submenuitemlist_ = new List<System.Windows.Forms.MenuItem>();
     private SetDisplay setdsp_;
+    private Screen master_sc_;
+    Dictionary<Screen, Mirror> screen_mirror_dict_ = new Dictionary<Screen, Mirror>();
+    System.Windows.Forms.Integration.ElementHost ehost_;
 
-    public MenuItem5_subMenu_utility(SetDisplay setdsp)
+    public MenuItem5_subMenu_utility(SetDisplay setdsp, System.Windows.Forms.Integration.ElementHost ehost)
     {
         this.setdsp_ = setdsp;
+        this.ehost_ = ehost;
     }
 
     public void addSubMenuItem(System.Windows.Forms.MenuItem submenuitem) {
@@ -223,11 +226,43 @@ public class MenuItem5_subMenu_utility
     private void checkOnlyOneItem(System.Windows.Forms.MenuItem targetitem)
     {
         //like radio button
-        //bool temp_checked = !targetitem.Checked;
-        foreach (System.Windows.Forms.MenuItem submenuitem in submenuitemlist_) {
+        bool temp_checked = !targetitem.Checked;
+        /*foreach (System.Windows.Forms.MenuItem submenuitem in submenuitemlist_) {
             submenuitem.Checked = false;
+        }*/
+        targetitem.Checked = temp_checked;
+    }
+
+    private void wakeUpMirror(Screen sc) {
+        if (null == sc) {
+            return;
         }
-        targetitem.Checked = true;//temp_checked;
+        if (true == this.screen_mirror_dict_.ContainsKey(sc)) {
+            return;
+        }
+        this.screen_mirror_dict_.Add(sc, new Mirror(sc, this.ehost_));
+    }
+
+    private void killMirror(Screen sc) {
+        if (null == sc)
+        {
+            return;
+        }
+        if (false == this.screen_mirror_dict_.ContainsKey(sc))
+        {
+            return;
+        }
+        Mirror temp_mirror = null;
+        try
+        {
+            this.screen_mirror_dict_.TryGetValue(sc, out temp_mirror);
+        }catch (Exception e) {
+            Utillities.writeLog("Error : Failed to kill Mirror! code : "+e.ToString());
+        }
+        if (null != temp_mirror) {
+            temp_mirror.Close();
+            this.screen_mirror_dict_.Remove(sc);
+        }
     }
 
     public EventHandler menuItem5_subMenu_Click(Screen sc)
@@ -237,7 +272,27 @@ public class MenuItem5_subMenu_utility
             
             System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
             this.checkOnlyOneItem(targetitem);
-            this.setdsp_.setDsp(sc);
+
+            if (true == targetitem.Checked){
+                this.killMirror(sc);
+                this.setdsp_.setDsp(sc);
+                wakeUpMirror(master_sc_);
+                this.master_sc_ = sc;
+            }else {
+                if (sc == master_sc_){
+                    try {
+                        KeyValuePair<Screen, Mirror> sc_element = this.screen_mirror_dict_.First();
+                        this.killMirror(sc_element.Key);
+                        this.setdsp_.setDsp(sc_element.Key);
+                        master_sc_ = sc_element.Key;
+                    }catch (Exception e){
+                        Utillities.writeLog("Error : Failed to get First Value from dict! code : " + e.ToString());
+                    }
+                }else {
+                    this.killMirror(sc);
+                }
+
+            }
         };
     }
 }
@@ -246,6 +301,7 @@ public class MenuItem5_subMenu_utility
 public class SetDisplay {
     private System.Windows.Forms.Form form_;
     private int calibration_x_,calibration_y_;
+    private List<Screen> screen_list = new List<Screen>();
 
     public SetDisplay(System.Windows.Forms.Form form)
     {
@@ -278,4 +334,12 @@ public class SetDisplay {
         form_.Height = sc.Bounds.Height;
     }
 
+}
+
+public class Utillities {
+    public static void writeLog(string message)
+    {
+        string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
+        System.IO.File.AppendAllText("log.txt", appendText);
+    }
 }
