@@ -22,6 +22,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
   private System.Windows.Forms.MenuItem menuItem2;
   private System.Windows.Forms.MenuItem menuItem3;
   private System.Windows.Forms.MenuItem menuItem4;
+  private System.Windows.Forms.MenuItem menuItem5;
   private System.Windows.Controls.WebBrowser webBrowser;
 
   Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(FEATURE_BROWSER_EMULATION);
@@ -53,9 +54,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
     writeLog("init Form");
     this.Text = "WallPaperEngine";
     this.FormBorderStyle = FormBorderStyle.None;
-    this.Left = this.Top = 0;
-    this.Width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
-    this.Height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+    SetDisplay setdsp = new SetDisplay(this);
+    setdsp.setPrimaryDsp();
 
     // フォーム内のパーツ
     writeLog("init form parts");
@@ -67,6 +67,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem2 = new System.Windows.Forms.MenuItem();
     this.menuItem3 = new System.Windows.Forms.MenuItem();
     this.menuItem4 = new System.Windows.Forms.MenuItem();
+    this.menuItem5 = new System.Windows.Forms.MenuItem();
     this.notifyIcon = new System.Windows.Forms.NotifyIcon();
     this.webBrowser = new System.Windows.Controls.WebBrowser();
 
@@ -97,7 +98,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
     // メニューにmenuItemを追加
     writeLog("add notifyIcon");
-    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4});
+    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4,this.menuItem5});
+
 
     // menuItem0として終了ボタンを追加
     this.menuItem0.Index = 0;
@@ -110,20 +112,35 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
     this.menuItem1.Checked = this.mediaElement.IsMuted;
 
-    // menuItem2としてミュートボタンを追加
+    // menuItem2としてロードビデオボタンを追加
     this.menuItem2.Index = 2;
     this.menuItem2.Text = "Load Video";
     this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
 
-    // menuItem3として「作者に奢る」ボタンを追加
+    // menuItem3としてロードURLボタンを追加
     this.menuItem3.Index = 3;
     this.menuItem3.Text = "Load URL";
     this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
 
     // menuItem4として「作者に奢る」ボタンを追加
-    this.menuItem4.Index = 4;
+    this.menuItem4.Index = 5;
     this.menuItem4.Text = "作者に奢る";
     this.menuItem4.Click += new System.EventHandler(this.menuItem4_Click);
+
+    // menuItem5としてターゲットディスプレイボタンを追加
+    this.menuItem5.Index = 4;
+    this.menuItem5.Text = "Target Display";
+    MenuItem5_subMenu_utility submenu_utility = new MenuItem5_subMenu_utility(setdsp);
+
+    //接続されているディスプレイの数だけmenuItem5にサブメニューを追加
+    Screen[] sc_array = System.Windows.Forms.Screen.AllScreens;
+    foreach (Screen sc in sc_array) {
+        System.Windows.Forms.MenuItem submenuItem = new MenuItem();
+        submenuItem.Text = sc.DeviceName;
+        submenuItem.Click += submenu_utility.menuItem5_subMenu_Click(sc);
+        submenu_utility.addSubMenuItem(submenuItem);
+        this.menuItem5.MenuItems.Add(submenuItem);
+    }
 
     // タスクトレイのアイコンの設定
     this.notifyIcon.Icon = new Icon("favicon.ico");
@@ -192,5 +209,79 @@ class WallPaperEngine : System.Windows.Forms.Form {
     string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
     System.IO.File.AppendAllText("log.txt", appendText);
   }
+
+}
+
+public class MenuItem5_subMenu_utility
+{
+    private List<System.Windows.Forms.MenuItem> submenuitemlist_ = new List<System.Windows.Forms.MenuItem>();
+    private SetDisplay setdsp_;
+
+    public MenuItem5_subMenu_utility(SetDisplay setdsp)
+    {
+        this.setdsp_ = setdsp;
+    }
+
+    public void addSubMenuItem(System.Windows.Forms.MenuItem submenuitem) {
+        submenuitemlist_.Add(submenuitem);
+    }
+
+    private void checkOnlyOneItem(System.Windows.Forms.MenuItem targetitem)
+    {
+        //like radio button
+        //bool temp_checked = !targetitem.Checked;
+        foreach (System.Windows.Forms.MenuItem submenuitem in submenuitemlist_) {
+            submenuitem.Checked = false;
+        }
+        targetitem.Checked = true;//temp_checked;
+    }
+
+    public EventHandler menuItem5_subMenu_Click(Screen sc)
+    {
+        return delegate(object sender_s, EventArgs e_s)
+        {
+            
+            System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
+            this.checkOnlyOneItem(targetitem);
+            this.setdsp_.setDsp(sc);
+        };
+    }
+}
+
+
+public class SetDisplay {
+    private System.Windows.Forms.Form form_;
+    private int calibration_x_,calibration_y_;
+
+    public SetDisplay(System.Windows.Forms.Form form)
+    {
+        this.form_ = form;
+
+        //マルチモニタ環境でFormの座標系がずれる(0を代入しても0にならない)ので校正用の値を生成
+        this.form_.Left = this.form_.Top = 0;
+        this.calibration_x_ = -this.form_.Left;
+        this.calibration_y_ = -this.form_.Top;
+    }
+
+    public void setPrimaryDsp()
+    {
+        Screen[] sc_list = System.Windows.Forms.Screen.AllScreens;
+        foreach (Screen sc in sc_list)
+        {
+            if (true == sc.Primary)
+            {
+                this.setDsp(sc);
+                break;
+            }
+        }
+    }
+
+    public void setDsp(Screen sc)
+    {
+        form_.Top = this.calibration_y_ + sc.Bounds.Y;
+        form_.Left = this.calibration_x_ + sc.Bounds.X;
+        form_.Width = sc.Bounds.Width;
+        form_.Height = sc.Bounds.Height;
+    }
 
 }
