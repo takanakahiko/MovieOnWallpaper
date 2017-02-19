@@ -62,6 +62,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.elementHost = new System.Windows.Forms.Integration.ElementHost();
     this.mediaElement = new System.Windows.Controls.MediaElement();
     this.contextMenu = new System.Windows.Forms.ContextMenu();
+    //TODO : MenuItemを配列として定義に変更
     this.menuItem0 = new System.Windows.Forms.MenuItem();
     this.menuItem1 = new System.Windows.Forms.MenuItem();
     this.menuItem2 = new System.Windows.Forms.MenuItem();
@@ -240,7 +241,7 @@ public class MenuItem5_subMenu_utility
     {
         return delegate(object sender_s, EventArgs e_s)
         {
-            
+
             System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
             this.checkOnlyOneItem(targetitem);
             this.setdsp_.setDsp(sc);
