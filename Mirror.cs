@@ -21,8 +21,8 @@ public class Mirror : System.Windows.Forms.Form
         //壁紙にFormを張り付ける
         IntPtr progman = IntPtr.Zero;
         progman = Wallpainter.SetupWallpaper();
-        if (progman == IntPtr.Zero) Utillities.writeLog("Error : Failed to retrieve progman!");
-        if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utillities.writeLog("Error : Failed to set Parent!");
+        if (progman == IntPtr.Zero) Utilities.writeLog("Error : Failed to retrieve progman!");
+        if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utilities.writeLog("Error : Failed to set Parent!");
         WinAPI.ShowWindowAsync(this.Handle, 1);
 
         this.elementHost = new System.Windows.Forms.Integration.ElementHost();
@@ -30,7 +30,7 @@ public class Mirror : System.Windows.Forms.Form
         this.elementHost.Dock = DockStyle.Fill;
 
         // フォームの設定
-        Utillities.writeLog("init Mirror Form");
+        Utilities.writeLog("init Mirror Form");
         this.Text = "WallPaperEngine";
         this.FormBorderStyle = FormBorderStyle.None;
         SetDisplay setdsp = new SetDisplay(this);

@@ -47,22 +47,23 @@ class WallPaperEngine : System.Windows.Forms.Form {
     //壁紙にFormを張り付ける
     IntPtr progman = IntPtr.Zero;
     progman = Wallpainter.SetupWallpaper();
-    if (progman == IntPtr.Zero) Utillities.writeLog("Error : Failed to retrieve progman!");
-    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utillities.writeLog("Error : Failed to set Parent!");
+    if (progman == IntPtr.Zero) Utilities.writeLog("Error : Failed to retrieve progman!");
+    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utilities.writeLog("Error : Failed to set Parent!");
     WinAPI.ShowWindowAsync(this.Handle, 1);
 
     // フォームの設定
-    Utillities.writeLog("init Form");
+    Utilities.writeLog("init Form");
     this.Text = "WallPaperEngine";
     this.FormBorderStyle = FormBorderStyle.None;
     SetDisplay setdsp = new SetDisplay(this);
     setdsp.setPrimaryDsp();
 
     // フォーム内のパーツ
-    Utillities.writeLog("init form parts");
+    Utilities.writeLog("init form parts");
     this.elementHost = new System.Windows.Forms.Integration.ElementHost();
     this.mediaElement = new System.Windows.Controls.MediaElement();
     this.contextMenu = new System.Windows.Forms.ContextMenu();
+    //TODO : MenuItemを配列として定義に変更
     this.menuItem0 = new System.Windows.Forms.MenuItem();
     this.menuItem1 = new System.Windows.Forms.MenuItem();
     this.menuItem2 = new System.Windows.Forms.MenuItem();
@@ -73,13 +74,13 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.webBrowser = new System.Windows.Controls.WebBrowser();
 
     // mediaElementを置くためのパーツ
-    Utillities.writeLog("init elementHost");
+    Utilities.writeLog("init elementHost");
     this.elementHost.Visible = true;
     this.elementHost.Dock = DockStyle.Fill;
     this.Controls.Add(this.elementHost);
 
     // 動画再生パーツ
-    Utillities.writeLog("init mediaElement");
+    Utilities.writeLog("init mediaElement");
     this.mediaElement.Visibility = System.Windows.Visibility.Visible;
     this.mediaElement.Margin = new System.Windows.Thickness(0, 0, 0, 0);
     this.mediaElement.UnloadedBehavior = System.Windows.Controls.MediaState.Manual;
@@ -89,16 +90,16 @@ class WallPaperEngine : System.Windows.Forms.Form {
     };
     this.elementHost.Child = this.mediaElement;
 
-    Utillities.writeLog("init webBrowser");
+    Utilities.writeLog("init webBrowser");
     this.webBrowser.Visibility = System.Windows.Visibility.Visible;
     this.webBrowser.Margin = new System.Windows.Thickness(0, 0, 0, 0);
 
     // 動画ソースの読み込み
-    Utillities.writeLog("load video");
+    Utilities.writeLog("load video");
     loadVideo();
 
     // メニューにmenuItemを追加
-    Utillities.writeLog("add notifyIcon");
+    Utilities.writeLog("add notifyIcon");
     this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4,this.menuItem5});
 
 
@@ -172,8 +173,14 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.mediaElement.Pause();
     this.elementHost.Child = null;
     string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
-    this.webBrowser.Navigate(s1);
-    this.elementHost.Child = this.webBrowser;
+    try{
+        this.webBrowser.Navigate(s1);
+        this.elementHost.Child = this.webBrowser;
+    }catch (Exception e) {
+        Utilities.writeLog("url error : " + e.GetType().ToString());
+        MessageBox.Show("無効なURLです。\n正しい形式のURLを指定してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        this.elementHost.Child = this.mediaElement;
+    }
   }
 
   private void Form1_FormClosing(object sender, FormClosingEventArgs e){
@@ -259,7 +266,7 @@ public class MenuItem5_subMenu_utility
         {
             this.screen_mirror_dict_.TryGetValue(sc, out temp_mirror);
         }catch (Exception e) {
-            Utillities.writeLog("Error : Failed to kill Mirror! code : "+e.ToString());
+            Utilities.writeLog("Error : Failed to kill Mirror! code : "+e.ToString());
         }
         if (null != temp_mirror) {
             temp_mirror.Close();
@@ -271,7 +278,7 @@ public class MenuItem5_subMenu_utility
     {
         return delegate(object sender_s, EventArgs e_s)
         {
-            
+
             System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
             this.checkOnlyOneItem(targetitem);
 
@@ -288,7 +295,7 @@ public class MenuItem5_subMenu_utility
                         this.setdsp_.setDsp(sc_element.Key);
                         master_sc_ = sc_element.Key;
                     }catch (Exception e){
-                        Utillities.writeLog("Error : Failed to get First Value from dict! code : " + e.ToString());
+                        Utilities.writeLog("Error : Failed to get First Value from dict! code : " + e.ToString());
                     }
                 }else {
                     this.killMirror(sc);
@@ -338,7 +345,7 @@ public class SetDisplay {
 
 }
 
-public class Utillities {
+public class Utilities {
     public static void writeLog(string message)
     {
         string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
