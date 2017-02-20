@@ -40,6 +40,10 @@ public class Mirror : System.Windows.Forms.Form {
         //マスターの内容をコピーするためにVisual Brushを設定
         VisualBrush vBrush = new VisualBrush();
         vBrush.TileMode = System.Windows.Media.TileMode.None;
+        //Visual Brushにキャッシュを設定
+        RenderOptions.SetCachingHint(vBrush, CachingHint.Cache);
+        RenderOptions.SetCacheInvalidationThresholdMinimum(vBrush, 0.5);
+        RenderOptions.SetCacheInvalidationThresholdMaximum(vBrush, 2.0);
         //マスターのElementHost.ChildをVisual Brushに設定
         vBrush.Visual = ehost.Child;
 
