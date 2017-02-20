@@ -2,11 +2,10 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 
-class WinAPI
-{
+class WinAPI {
   public static UInt32 WM_SPAWN_WORKER = 0x052C;
 
-  public enum WindowLongFlags : int{
+  public enum WindowLongFlags : int {
     GWL_EXSTYLE = -20,
     GWLP_HINSTANCE = -6,
     GWLP_HWNDPARENT = -8,
@@ -20,7 +19,7 @@ class WinAPI
   }
 
   [Flags]
-  public enum SendMessageTimeoutFlags : uint{
+  public enum SendMessageTimeoutFlags : uint {
     SMTO_NORMAL = 0x0,
     SMTO_BLOCK = 0x1,
     SMTO_ABORTIFHUNG = 0x2,
@@ -58,17 +57,17 @@ class WinAPI
 
 }
 
-class Wallpainter{
-  public static IntPtr GetProgman(){
+class Wallpainter {
+  public static IntPtr GetProgman() {
     return WinAPI.FindWindow("Progman", null);
   }
 
-  public static IntPtr SetupWallpaper(){
+  public static IntPtr SetupWallpaper() {
     IntPtr progman = GetProgman();
     WinAPI.SendMessage(progman, WinAPI.WM_SPAWN_WORKER, IntPtr.Zero, IntPtr.Zero);
 
     IntPtr workerw = IntPtr.Zero;
-    WinAPI.EnumWindows(new WinAPI.EnumWindowsProc((tophandle, topparamhandle) =>{
+    WinAPI.EnumWindows(new WinAPI.EnumWindowsProc((tophandle, topparamhandle) => {
       IntPtr p = WinAPI.FindWindowEx(tophandle, IntPtr.Zero, "SHELLDLL_DefView", null);
       if (p != IntPtr.Zero) workerw = WinAPI.FindWindowEx(IntPtr.Zero, tophandle, "WorkerW", null);
       return true;
