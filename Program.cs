@@ -31,11 +31,12 @@ class WallPaperEngine : System.Windows.Forms.Form {
   string process_dbg_name = System.Diagnostics.Process.GetCurrentProcess().ProcessName + ".vshost.exe";
 
   [STAThread]
-  static void Main(){
+  static void Main() {
     Application.Run(new WallPaperEngine());
   }
 
-  public WallPaperEngine(){
+  public WallPaperEngine() {
+
     //下記処理（レジストリを）をリセットする
     this.FormClosing += Form1_FormClosing;
 
@@ -46,19 +47,19 @@ class WallPaperEngine : System.Windows.Forms.Form {
     //壁紙にFormを張り付ける
     IntPtr progman = IntPtr.Zero;
     progman = Wallpainter.SetupWallpaper();
-    if (progman == IntPtr.Zero) writeLog("Error : Failed to retrieve progman!");
-    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) writeLog("Error : Failed to set Parent!");
+    if (progman == IntPtr.Zero) Utilities.writeLog("Error : Failed to retrieve progman!");
+    if (WinAPI.SetParent(this.Handle, progman) == IntPtr.Zero) Utilities.writeLog("Error : Failed to set Parent!");
     WinAPI.ShowWindowAsync(this.Handle, 1);
 
     // フォームの設定
-    writeLog("init Form");
+    Utilities.writeLog("init Form");
     this.Text = "WallPaperEngine";
     this.FormBorderStyle = FormBorderStyle.None;
     SetDisplay setdsp = new SetDisplay(this);
     setdsp.setPrimaryDsp();
 
     // フォーム内のパーツ
-    writeLog("init form parts");
+    Utilities.writeLog("init form parts");
     this.elementHost = new System.Windows.Forms.Integration.ElementHost();
     this.mediaElement = new System.Windows.Controls.MediaElement();
     this.contextMenu = new System.Windows.Forms.ContextMenu();
@@ -73,33 +74,33 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.webBrowser = new System.Windows.Controls.WebBrowser();
 
     // mediaElementを置くためのパーツ
-    writeLog("init elementHost");
+    Utilities.writeLog("init elementHost");
     this.elementHost.Visible = true;
     this.elementHost.Dock = DockStyle.Fill;
     this.Controls.Add(this.elementHost);
 
     // 動画再生パーツ
-    writeLog("init mediaElement");
+    Utilities.writeLog("init mediaElement");
     this.mediaElement.Visibility = System.Windows.Visibility.Visible;
     this.mediaElement.Margin = new System.Windows.Thickness(0, 0, 0, 0);
     this.mediaElement.UnloadedBehavior = System.Windows.Controls.MediaState.Manual;
-    this.mediaElement.MediaEnded += (sender, eventArgs) =>　{
+    this.mediaElement.MediaEnded += (sender, eventArgs) => {
       this.mediaElement.Position = TimeSpan.FromMilliseconds(1);
       this.mediaElement.Play();
     };
     this.elementHost.Child = this.mediaElement;
 
-    writeLog("init webBrowser");
+    Utilities.writeLog("init webBrowser");
     this.webBrowser.Visibility = System.Windows.Visibility.Visible;
     this.webBrowser.Margin = new System.Windows.Thickness(0, 0, 0, 0);
 
     // 動画ソースの読み込み
-    writeLog("load video");
+    Utilities.writeLog("load video");
     loadVideo();
 
     // メニューにmenuItemを追加
-    writeLog("add notifyIcon");
-    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {this.menuItem0,this.menuItem1,this.menuItem2,this.menuItem3,this.menuItem4,this.menuItem5});
+    Utilities.writeLog("add notifyIcon");
+    this.contextMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.menuItem0, this.menuItem1, this.menuItem2, this.menuItem3, this.menuItem4, this.menuItem5 });
 
 
     // menuItem0として終了ボタンを追加
@@ -131,16 +132,19 @@ class WallPaperEngine : System.Windows.Forms.Form {
     // menuItem5としてターゲットディスプレイボタンを追加
     this.menuItem5.Index = 4;
     this.menuItem5.Text = "Target Display";
-    MenuItem5_subMenu_utility submenu_utility = new MenuItem5_subMenu_utility(setdsp);
+    MenuItem5SubMenuUtility submenu_utility = new MenuItem5SubMenuUtility(setdsp, elementHost);
 
     //接続されているディスプレイの数だけmenuItem5にサブメニューを追加
     Screen[] sc_array = System.Windows.Forms.Screen.AllScreens;
     foreach (Screen sc in sc_array) {
-        System.Windows.Forms.MenuItem submenuItem = new MenuItem();
-        submenuItem.Text = sc.DeviceName;
-        submenuItem.Click += submenu_utility.menuItem5_subMenu_Click(sc);
-        submenu_utility.addSubMenuItem(submenuItem);
-        this.menuItem5.MenuItems.Add(submenuItem);
+      System.Windows.Forms.MenuItem submenuItem = new MenuItem();
+      submenuItem.Text = sc.DeviceName;
+      submenuItem.Click += submenu_utility.menuItem5_subMenu_Click(sc);
+      if (true == sc.Primary) {
+        submenuItem.Checked = true;
+        submenu_utility.init_master_sc(sc);
+      }
+      this.menuItem5.MenuItems.Add(submenuItem);
     }
 
     // タスクトレイのアイコンの設定
@@ -151,37 +155,37 @@ class WallPaperEngine : System.Windows.Forms.Form {
 
   }
 
-  private void loadVideo(){
+  private void loadVideo() {
     // 動画読み込みダイアログの追加
     this.elementHost.Child = null;
     OpenFileDialog ofd = new OpenFileDialog();
-    if (ofd.ShowDialog() == DialogResult.OK){
+    if (ofd.ShowDialog() == DialogResult.OK) {
       this.mediaElement.Source = new Uri(ofd.FileName);
-    }else{
-      MessageBox.Show("動画が読み込めませんでした。\n読み込みなおすにはタスクトレイアイコンを右クリックして「Load Video」を選択してください。","エラー",MessageBoxButtons.OK,MessageBoxIcon.Error);
+    } else {
+      MessageBox.Show("動画が読み込めませんでした。\n読み込みなおすにはタスクトレイアイコンを右クリックして「Load Video」を選択してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
     this.elementHost.Child = this.mediaElement;
   }
 
-  private void loadURL(){
+  private void loadURL() {
     // URL読み込みダイアログの追加
     this.mediaElement.Pause();
     this.elementHost.Child = null;
     string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
-    try{
-        this.webBrowser.Navigate(s1);
-        this.elementHost.Child = this.webBrowser;
-    }catch (Exception e) {
-        writeLog("url error : "+e.GetType().ToString());
-        MessageBox.Show("無効なURLです。\n正しい形式のURLを指定してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        this.elementHost.Child = this.mediaElement;
+    try {
+      this.webBrowser.Navigate(s1);
+      this.elementHost.Child = this.webBrowser;
+    } catch (Exception e) {
+      Utilities.writeLog("url error : " + e.GetType().ToString());
+      MessageBox.Show("無効なURLです。\n正しい形式のURLを指定してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+      this.elementHost.Child = this.mediaElement;
     }
   }
 
-  private void Form1_FormClosing(object sender, FormClosingEventArgs e){
-      regkey.DeleteValue(process_name);
-      regkey.DeleteValue(process_dbg_name);
-      regkey.Close();
+  private void Form1_FormClosing(object sender, FormClosingEventArgs e) {
+    regkey.DeleteValue(process_name);
+    regkey.DeleteValue(process_dbg_name);
+    regkey.Close();
   }
 
 
@@ -206,83 +210,147 @@ class WallPaperEngine : System.Windows.Forms.Form {
     System.Diagnostics.Process.Start("http://www.amazon.co.jp/registry/wishlist/2X1XQIFXKS456/ref=cm_sw_r_tw_ws_x_gBDOybXPBC2NP");
   }
 
-  private void writeLog(string message){
-    string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
-    System.IO.File.AppendAllText("log.txt", appendText);
-  }
-
 }
 
-public class MenuItem5_subMenu_utility
-{
-    private List<System.Windows.Forms.MenuItem> submenuitemlist_ = new List<System.Windows.Forms.MenuItem>();
-    private SetDisplay setdsp_;
+/*
+ * 壁紙             : MovieOnWallpaperで生成した壁紙のこと
+ * master(マスター) : 壁紙本体
+ * mirror(ミラー)   : マルチディスプレイ用にマスターの描画内容をコピーしたもの
+ */
 
-    public MenuItem5_subMenu_utility(SetDisplay setdsp)
-    {
-        this.setdsp_ = setdsp;
+public class MenuItem5SubMenuUtility {
+  private SetDisplay setdsp_;
+  private Screen master_sc_;
+  Dictionary<Screen, Mirror> screen_mirror_dict_ = new Dictionary<Screen, Mirror>();
+  System.Windows.Forms.Integration.ElementHost ehost_;
+
+  public MenuItem5SubMenuUtility(SetDisplay setdsp, System.Windows.Forms.Integration.ElementHost ehost) {
+    this.setdsp_ = setdsp;
+    this.ehost_ = ehost;
+  }
+
+  //アプリケーション開始時のマスターを登録
+  public void init_master_sc(Screen sc) {
+    this.master_sc_ = sc;
+  }
+
+  //サブメニューのチェックオンオフ切り替え
+  private void checkedTargetItem(System.Windows.Forms.MenuItem targetitem) {
+    targetitem.Checked = !targetitem.Checked;
+  }
+
+  //ミラーを作成して(対応ディスプレイ,ミラー)で辞書に入れる
+  private void wakeUpMirror(Screen sc) {
+    if (null == sc) {
+      return;
     }
-
-    public void addSubMenuItem(System.Windows.Forms.MenuItem submenuitem) {
-        submenuitemlist_.Add(submenuitem);
+    if (true == this.screen_mirror_dict_.ContainsKey(sc)) {
+      return;
     }
+    this.screen_mirror_dict_.Add(sc, new Mirror(sc, this.ehost_));
+  }
 
-    private void checkOnlyOneItem(System.Windows.Forms.MenuItem targetitem)
-    {
-        //like radio button
-        //bool temp_checked = !targetitem.Checked;
-        foreach (System.Windows.Forms.MenuItem submenuitem in submenuitemlist_) {
-            submenuitem.Checked = false;
+  //ディスプレイと対応するミラーを殺して辞書から削除
+  private void killMirror(Screen sc) {
+    if (null == sc) {
+      return;
+    }
+    if (false == this.screen_mirror_dict_.ContainsKey(sc)) {
+      return;
+    }
+    Mirror temp_mirror = null;
+    try {
+      this.screen_mirror_dict_.TryGetValue(sc, out temp_mirror);
+    } catch (Exception e) {
+      Utilities.writeLog("Error : Failed to kill Mirror! code : " + e.ToString());
+    }
+    if (null != temp_mirror) {
+      temp_mirror.Close();
+      this.screen_mirror_dict_.Remove(sc);
+    }
+  }
+
+  //サブメニュークリック時の処理
+  public EventHandler menuItem5_subMenu_Click(Screen sc) {
+    return delegate(object sender_s, EventArgs e_s) {
+
+      //クリックされたサブメニューを取得
+      System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
+      //チェックの切り替え
+      this.checkedTargetItem(targetitem);
+
+      if (true == targetitem.Checked) {
+        //オンならミラーを起動
+        this.killMirror(sc);
+        this.setdsp_.setDsp(sc);
+        wakeUpMirror(this.master_sc_);
+        this.master_sc_ = sc;
+      } else {
+        if (sc == master_sc_) {
+          /*
+           * オフかつサブメニューで選択されたディスプレイがマスターなら
+           * 適当なミラーをマスターにすることで選択されたディスプレイの壁紙をオフにする
+           */
+          try {
+            KeyValuePair<Screen, Mirror> sc_element = this.screen_mirror_dict_.First();
+            this.killMirror(sc_element.Key);
+            this.setdsp_.setDsp(sc_element.Key);
+            master_sc_ = sc_element.Key;
+          } catch (Exception e) {
+            Utilities.writeLog("Error : Failed to get First Value from dict! code : " + e.ToString());
+          }
+        } else {
+          //オフかつマスターでない(＝ミラー)なら殺す
+          this.killMirror(sc);
         }
-        targetitem.Checked = true;//temp_checked;
-    }
 
-    public EventHandler menuItem5_subMenu_Click(Screen sc)
-    {
-        return delegate(object sender_s, EventArgs e_s)
-        {
-
-            System.Windows.Forms.MenuItem targetitem = sender_s as System.Windows.Forms.MenuItem;
-            this.checkOnlyOneItem(targetitem);
-            this.setdsp_.setDsp(sc);
-        };
-    }
+      }
+    };
+  }
 }
 
 
 public class SetDisplay {
-    private System.Windows.Forms.Form form_;
-    private int calibration_x_,calibration_y_;
+  private System.Windows.Forms.Form form_;
+  private int calibration_x_, calibration_y_;
+  private List<Screen> screen_list = new List<Screen>();
 
-    public SetDisplay(System.Windows.Forms.Form form)
-    {
-        this.form_ = form;
+  public SetDisplay(System.Windows.Forms.Form form) {
+    this.form_ = form;
 
-        //マルチモニタ環境でFormの座標系がずれる(0を代入しても0にならない)ので校正用の値を生成
-        this.form_.Left = this.form_.Top = 0;
-        this.calibration_x_ = -this.form_.Left;
-        this.calibration_y_ = -this.form_.Top;
+    //マルチモニタ環境でFormの座標系がずれる(0を代入しても0にならない)ので校正用の値を生成
+    this.form_.Left = this.form_.Top = 0;
+    this.calibration_x_ = -this.form_.Left;
+    this.calibration_y_ = -this.form_.Top;
+  }
+
+  //優先ディスプレイにフォームを設置
+  //ここでのフォームはマスターやミラー
+  public void setPrimaryDsp() {
+    Screen[] sc_list = System.Windows.Forms.Screen.AllScreens;
+    foreach (Screen sc in sc_list) {
+      if (true == sc.Primary) {
+        this.setDsp(sc);
+        break;
+      }
     }
+  }
 
-    public void setPrimaryDsp()
-    {
-        Screen[] sc_list = System.Windows.Forms.Screen.AllScreens;
-        foreach (Screen sc in sc_list)
-        {
-            if (true == sc.Primary)
-            {
-                this.setDsp(sc);
-                break;
-            }
-        }
-    }
+  //渡されたディスプレイの大きさにフォームを合わせる
+  public void setDsp(Screen sc) {
+    form_.Top = this.calibration_y_ + sc.Bounds.Y;
+    form_.Left = this.calibration_x_ + sc.Bounds.X;
+    form_.Width = sc.Bounds.Width;
+    form_.Height = sc.Bounds.Height;
+  }
 
-    public void setDsp(Screen sc)
-    {
-        form_.Top = this.calibration_y_ + sc.Bounds.Y;
-        form_.Left = this.calibration_x_ + sc.Bounds.X;
-        form_.Width = sc.Bounds.Width;
-        form_.Height = sc.Bounds.Height;
-    }
+}
 
+//ユーティリティ用クラス
+public class Utilities {
+  //ログ出力
+  public static void writeLog(string message) {
+    string appendText = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss ") + message + Environment.NewLine;
+    System.IO.File.AppendAllText("log.txt", appendText);
+  }
 }
