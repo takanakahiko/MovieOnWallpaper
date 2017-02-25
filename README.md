@@ -7,7 +7,7 @@
 
 
 ### フレームワーク
-- https://www.microsoft.com/ja-jp/download/details.aspx?id=53345
+- http://go.microsoft.com/fwlink/?LinkId=528261
 
 以上が必要です
 
