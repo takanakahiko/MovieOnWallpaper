@@ -5,6 +5,12 @@
 
 ## コンパイル
 
+
+### フレームワーク
+- https://www.microsoft.com/ja-jp/download/details.aspx?id=53345
+
+以上が必要です
+
 ### Debugビルド
 ` C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe MovieOnWallpaper.csproj /p:Configuration=Debug `
 
