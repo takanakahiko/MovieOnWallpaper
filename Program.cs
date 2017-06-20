@@ -116,7 +116,17 @@ class WallPaperEngine : System.Windows.Forms.Form {
     // menuItem2としてロードビデオボタンを追加
     this.menuItem2.Index = 2;
     this.menuItem2.Text = "Load Video";
-    this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
+    
+    System.Windows.Forms.MenuItem videoSubmenuItem1 = new System.Windows.Forms.MenuItem();
+    videoSubmenuItem1.Text = "from Local File";
+    videoSubmenuItem1.Click += new System.EventHandler(this.menuItem2_1_Click);
+    this.menuItem2.MenuItems.Add(videoSubmenuItem1);
+    
+    System.Windows.Forms.MenuItem videoSubmenuItem2 = new System.Windows.Forms.MenuItem();
+    videoSubmenuItem2.Text = "from Youtube Link";
+    videoSubmenuItem2.Click += new System.EventHandler(this.menuItem2_2_Click);
+    this.menuItem2.MenuItems.Add(videoSubmenuItem2);
+      
 
     // menuItem3としてロードURLボタンを追加
     this.menuItem3.Index = 3;
@@ -162,12 +172,32 @@ class WallPaperEngine : System.Windows.Forms.Form {
     }
     this.elementHost.Child = this.mediaElement;
   }
+    
+  private void loadYoutubeVideo(){
+    // URL読み込みダイアログの追加
+    this.mediaElement.Pause();
+    this.elementHost.Child = null;
+    string s1 = Microsoft.VisualBasic.Interaction.InputBox("Youtubeの動画のURLを入力して下さい。");
+    System.Text.RegularExpressions.Regex r = new System.Text.RegularExpressions.Regex(
+        @"\?v=([^&]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    try{
+        System.Text.RegularExpressions.Match m = r.Match(s1);
+        string url = "https://www.youtube.com/embed/" + m.Groups[1].Captures[0] + "?autoplay=1";
+        writeLog("url setting : "+url);
+        this.webBrowser.Navigate(url);
+        this.elementHost.Child = this.webBrowser;
+    }catch (Exception e) {
+        writeLog("url error : "+e.GetType().ToString());
+        MessageBox.Show("無効なURLです。\n正しい形式のURLを指定してください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        this.elementHost.Child = this.mediaElement;
+    }
+  }
 
   private void loadURL(){
     // URL読み込みダイアログの追加
     this.mediaElement.Pause();
     this.elementHost.Child = null;
-    string s1 = Microsoft.VisualBasic.Interaction.InputBox("メッセージを入力して下さい。");
+    string s1 = Microsoft.VisualBasic.Interaction.InputBox("WebページのURLを入力して下さい。");
     try{
         this.webBrowser.Navigate(s1);
         this.elementHost.Child = this.webBrowser;
@@ -194,8 +224,12 @@ class WallPaperEngine : System.Windows.Forms.Form {
     this.menuItem1.Checked = this.mediaElement.IsMuted;
   }
 
-  private void menuItem2_Click(object Sender, EventArgs e) {
+  private void menuItem2_1_Click(object Sender, EventArgs e) {
     this.loadVideo();
+  }
+    
+  private void menuItem2_2_Click(object Sender, EventArgs e) {
+    this.loadYoutubeVideo();
   }
 
   private void menuItem3_Click(object Sender, EventArgs e) {
