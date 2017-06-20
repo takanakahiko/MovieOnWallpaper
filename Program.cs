@@ -116,17 +116,17 @@ class WallPaperEngine : System.Windows.Forms.Form {
     // menuItem2としてロードビデオボタンを追加
     this.menuItem2.Index = 2;
     this.menuItem2.Text = "Load Video";
-    
+
     System.Windows.Forms.MenuItem videoSubmenuItem1 = new System.Windows.Forms.MenuItem();
     videoSubmenuItem1.Text = "from Local File";
     videoSubmenuItem1.Click += new System.EventHandler(this.menuItem2_1_Click);
     this.menuItem2.MenuItems.Add(videoSubmenuItem1);
-    
+
     System.Windows.Forms.MenuItem videoSubmenuItem2 = new System.Windows.Forms.MenuItem();
     videoSubmenuItem2.Text = "from Youtube Link";
     videoSubmenuItem2.Click += new System.EventHandler(this.menuItem2_2_Click);
     this.menuItem2.MenuItems.Add(videoSubmenuItem2);
-      
+
 
     // menuItem3としてロードURLボタンを追加
     this.menuItem3.Index = 3;
@@ -172,7 +172,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
     }
     this.elementHost.Child = this.mediaElement;
   }
-    
+
   private void loadYoutubeVideo(){
     // URL読み込みダイアログの追加
     this.mediaElement.Pause();
@@ -182,7 +182,8 @@ class WallPaperEngine : System.Windows.Forms.Form {
         @"\?v=([^&]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     try{
         System.Text.RegularExpressions.Match m = r.Match(s1);
-        string url = "https://www.youtube.com/embed/" + m.Groups[1].Captures[0] + "?autoplay=1&loop=1";
+        string id = m.Groups[1].Captures[0];
+        string url = "https://www.youtube.com/embed/" + id + "?autoplay=1&loop=1&playlist=" + id;
         writeLog("url setting : "+url);
         this.webBrowser.Navigate(url);
         this.elementHost.Child = this.webBrowser;
@@ -227,7 +228,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
   private void menuItem2_1_Click(object Sender, EventArgs e) {
     this.loadVideo();
   }
-    
+
   private void menuItem2_2_Click(object Sender, EventArgs e) {
     this.loadYoutubeVideo();
   }
