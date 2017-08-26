@@ -182,7 +182,7 @@ class WallPaperEngine : System.Windows.Forms.Form {
         @"\?v=([^&]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     try{
         System.Text.RegularExpressions.Match m = r.Match(s1);
-        string id = m.Groups[1].Captures[0];
+        string id = m.Groups[1].Captures[0].Value;
         string url = "https://www.youtube.com/embed/" + id + "?autoplay=1&loop=1&playlist=" + id;
         writeLog("url setting : "+url);
         this.webBrowser.Navigate(url);
